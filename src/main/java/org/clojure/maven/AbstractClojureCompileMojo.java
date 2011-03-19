@@ -2,37 +2,25 @@ package org.clojure.maven;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 import java.io.File;
+import java.io.OutputStream;
 import java.io.PrintStream;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 
 /**
  * Base class for running the Clojure compiler.
  *
- * @requiresDependencyResolution test
  */
 public abstract class AbstractClojureCompileMojo extends AbstractMojo {
-
-    /**
-     * Namespaces to be compiled.
-     * @parameter
-     * @required
-     */
-    private String[] namespaces;
-
-    /**
-     * outputDirectory
-     * @parameter expression="${project.build.outputDirectory}"
-     * @required
-     * @readonly
-     */
-    private String outputDirectory;
 
     /**
      * The enclosing project.
@@ -61,60 +49,58 @@ public abstract class AbstractClojureCompileMojo extends AbstractMojo {
         return new URLClassLoader((URL[])getClasspathURLs().toArray(new URL[0]));
     }
     
-    public void compile() throws MojoExecutionException {
+    public void runIsolated(Runnable task) throws MojoExecutionException {
+        PrintStream stdout = System.out;
+        Properties oldSystemProperties = System.getProperties();
+        IsolatedThreadGroup threadGroup = new IsolatedThreadGroup("clojure-thread-group");
 	try {
-            IsolatedThreadGroup threadGroup = new IsolatedThreadGroup("clojure-thread-group");
-            Thread mainThread = new Thread(threadGroup, new ClojureCompiler(outputDirectory, namespaces));
+            Thread mainThread = new Thread(threadGroup, task);
             mainThread.setContextClassLoader(getClassLoader());
+            System.setOut(new PrintStream(new WrappedStream(stdout)));
             mainThread.start();
-            joinThreads(threadGroup);
+            joinNonDaemonThreads(threadGroup);
 	} catch(Exception e) {
-	    throw new MojoExecutionException("Clojure compile failed", e);
+	    throw new MojoExecutionException("Clojure execution failed", e);
+        } finally {
+            System.setOut(stdout);
+            if (oldSystemProperties != null) {
+                System.setProperties(oldSystemProperties);
+            }
 	}
+        if (threadGroup.uncaught != null) {
+            throw new MojoExecutionException("Clojure execution failed", threadGroup.uncaught);
+        }
     }
 
-    private static void joinThreads(ThreadGroup group) throws Exception {
+    private void joinNonDaemonThreads(ThreadGroup group) throws Exception {
         boolean found;
         do {
             found = false;
-            Thread[] threads = new Thread[1];
-            int count = group.enumerate(threads);
-            if (count > 0) {
+            Collection<Thread> threads = getThreads(group);
+            for (Iterator iter = threads.iterator(); iter.hasNext(); ) {
+                Thread thread = (Thread)iter.next();
+                if (!thread.isAlive()) continue;
+                if (thread.isDaemon()) continue;
                 found = true;
-                threads[0].join();
+                getLog().debug("Joining thread " + thread.toString());
+                thread.join();
             }
+            // more threads might have started while we weren't looking
         } while (found);
     }
 
-    class ClojureCompiler implements Runnable {
-        private String outputDirectory;
-        private String[] namespaces;
-        
-        public ClojureCompiler(String outputDirectory, String[] namespaces) {
-            this.outputDirectory = outputDirectory;
-            this.namespaces = namespaces;
+    private static Collection<Thread> getThreads(ThreadGroup group) {
+        Thread[] threads = new Thread[group.activeCount()];
+        int count = group.enumerate(threads, true);
+        Collection<Thread> result = new ArrayList<Thread>(count);
+        for (int i = 0; i < threads.length && threads[i] != null; i++) {
+            result.add(threads[i]);
         }
-        
-        public void run() {
-            PrintStream stdout = System.out;
-            try {
-                System.setOut(new WrappedPrintStream(System.out));
-                System.setProperty("clojure.compile.path", outputDirectory);
-                Class compiler = Thread.currentThread().getContextClassLoader().loadClass("clojure.lang.Compile");
-                Method mainMethod = compiler.getMethod("main", new Class[] { String[].class });
-                Object[] args = new Object[1];
-                args[0] = namespaces;
-                mainMethod.invoke(null, args);
-            } catch (Exception e) {
-                Thread.currentThread().getThreadGroup().uncaughtException(Thread.currentThread(), e);
-            } finally {
-                System.setOut(stdout);
-            }
-        }
+        return result;
     }
 
     class IsolatedThreadGroup extends ThreadGroup {
-        private Throwable throwable;
+        public Throwable uncaught;
 
         public IsolatedThreadGroup(String name) {
             super(name);
@@ -125,17 +111,22 @@ public abstract class AbstractClojureCompileMojo extends AbstractMojo {
                 // Normal thread completion
                 return;
             }
-            getLog().error("Exception thrown in IsolatedThreadGroup:", throwable);
+            synchronized (this) {
+                if (this.uncaught != null) {
+                    this.uncaught = throwable;
+                }
+            }
+            getLog().error("Exception in IsolatedThreadGroup:", throwable);
         }
     }
 
-    class WrappedPrintStream extends PrintStream {
-        public WrappedPrintStream(PrintStream stream) {
+    class WrappedStream extends PrintStream {
+        public WrappedStream(OutputStream stream) {
             super(stream);
         }
-        
+
         public void close() {
-            // Do nothing, to avoid shutting down the output.
+            // do nothing
         }
     }
 }
