@@ -32,13 +32,15 @@ public abstract class AbstractClojureMojo extends AbstractMojo {
      */
     protected MavenProject project;
 
-    public void runIsolated(Classpath classpath, Runnable task) throws MojoExecutionException {
+    public void runIsolated(ClassLoader classloader, Runnable task)
+        throws MojoExecutionException {
+
         PrintStream stdout = System.out;
         Properties oldSystemProperties = System.getProperties();
         IsolatedThreadGroup threadGroup = new IsolatedThreadGroup("clojure-thread-group");
 	try {
-            Thread mainThread = new Thread(threadGroup, task);
-            mainThread.setContextClassLoader(classpath.getClassLoader());
+            Thread mainThread = new Thread(threadGroup, task, "clojure-main-thread");
+            mainThread.setContextClassLoader(classloader);
             System.setOut(new PrintStream(new WrappedStream(stdout)));
             mainThread.start();
             joinNonDaemonThreads(threadGroup);
@@ -95,7 +97,7 @@ public abstract class AbstractClojureMojo extends AbstractMojo {
                 return;
             }
             synchronized (this) {
-                if (this.uncaught != null) {
+                if (this.uncaught == null) {
                     this.uncaught = throwable;
                 }
             }

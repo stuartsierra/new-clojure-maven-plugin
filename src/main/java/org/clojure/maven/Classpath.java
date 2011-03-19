@@ -57,8 +57,9 @@ public class Classpath {
         return urls;
     }
 
-    public ClassLoader getClassLoader() throws Exception {
-        return URLClassLoader.newInstance((URL[])getURLs().toArray(new URL[0]));
+    public URLClassLoader getClassLoader() throws Exception {
+        return URLClassLoader.newInstance((URL[])getURLs().toArray(new URL[0]),
+                                          Thread.currentThread().getContextClassLoader());
     }
 
     public String toString() {

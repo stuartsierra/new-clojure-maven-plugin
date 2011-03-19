@@ -6,12 +6,12 @@ import java.util.Arrays;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
- * Compile Clojure source files
+ * Compile Clojure test source files
  *
- * @requiresDependencyResolution compile
- * @goal compile
+ * @requiresDependencyResolution test
+ * @goal test-compile
  */
-public class ClojureCompileMojo extends AbstractClojureMojo {
+public class ClojureTestCompileMojo extends AbstractClojureMojo {
 
     /**
      * Namespaces to be compiled.
@@ -22,7 +22,7 @@ public class ClojureCompileMojo extends AbstractClojureMojo {
 
     /**
      * outputDirectory
-     * @parameter expression="${project.build.outputDirectory}"
+     * @parameter expression="${project.build.testOutputDirectory}"
      * @required
      * @readonly
      */
@@ -31,7 +31,7 @@ public class ClojureCompileMojo extends AbstractClojureMojo {
     public void execute() throws MojoExecutionException {
         try {
             new File(outputDirectory).mkdirs();
-            Classpath classpath = new Classpath(project, Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES, null);
+            Classpath classpath = new Classpath(project, Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES | Classpath.TEST_CLASSPATH | Classpath.TEST_SOURCES, null);
             URLClassLoader classloader = classpath.getClassLoader();
             getLog().debug("Classpath URLs: " + Arrays.toString(classloader.getURLs()));
             runIsolated(classloader, new ClojureCompileTask(outputDirectory, namespaces));
