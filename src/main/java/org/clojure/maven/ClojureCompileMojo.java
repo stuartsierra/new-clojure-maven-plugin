@@ -27,7 +27,7 @@ public class ClojureCompileMojo extends AbstractClojureMojo {
     private String outputDirectory;
 
     public void execute() throws MojoExecutionException {
-	runIsolated(new ClojureCompiler(outputDirectory, namespaces));
+	runIsolated("compile", new ClojureCompiler(outputDirectory, namespaces));
     }
 
     class ClojureCompiler implements Runnable {
