@@ -32,70 +32,13 @@ public abstract class AbstractClojureMojo extends AbstractMojo {
      */
     protected MavenProject project;
 
-    protected List<String> getCompileClasspathElements() throws Exception {
-        List<String> paths = new ArrayList<String>();
-        paths.addAll(project.getCompileClasspathElements());
-        paths.addAll(project.getCompileSourceRoots());
-        return paths;
-    }
-
-    protected List<String> getTestClasspathElements() throws Exception {
-        List<String> paths = new ArrayList<String>();
-        paths.addAll(project.getTestClasspathElements());
-        paths.addAll(project.getTestCompileSourceRoots());
-        return paths;
-    }
-
-    protected List<String> getRuntimeClasspathElements() throws Exception {
-        List<String> paths = new ArrayList<String>();
-        paths.addAll(project.getRuntimeClasspathElements());
-        return paths;
-    }
-
-    protected List<String> getClasspathElements(String scope) throws Exception {
-        if ("compile".equals(scope)) {
-            return getCompileClasspathElements();
-        } else if ("test".equals(scope)) {
-            return getTestClasspathElements();
-        } else if ("runtime".equals(scope)) {
-            return getRuntimeClasspathElements();
-        } else {
-            throw new Exception("Undefined classpath scope: " + scope);
-        }
-    }
-
-    protected List<URL> getClasspathURLs(String scope) throws Exception {
-        List<String> paths = getClasspathElements(scope);
-        List<URL> urls = new ArrayList<URL>();
-        for (int i = 0; i < paths.size(); i++) {
-            getLog().debug("Got classpath element: " + paths.get(i));
-            urls.add(new File(paths.get(i)).toURL());
-        }
-        return urls;
-    }
-
-    protected ClassLoader getClassLoader(String scope) throws Exception {
-        URLClassLoader classloader = URLClassLoader.newInstance((URL[])getClasspathURLs(scope).toArray(new URL[0]));
-        getLog().debug("Created URLClassLoader " + classloader);
-        getLog().debug("using URLs " + Arrays.toString(classloader.getURLs()));
-        ClassLoader cl = classloader.getParent();
-        while (cl != null) {
-            getLog().debug("with parent ClassLoader " + cl);
-            if (cl instanceof URLClassLoader) {
-                getLog().debug("using URLs " + Arrays.toString(((URLClassLoader)cl).getURLs()));
-            }
-            cl = cl.getParent();
-        }
-        return classloader;
-    }
-    
-    public void runIsolated(String scope, Runnable task) throws MojoExecutionException {
+    public void runIsolated(Classpath classpath, Runnable task) throws MojoExecutionException {
         PrintStream stdout = System.out;
         Properties oldSystemProperties = System.getProperties();
         IsolatedThreadGroup threadGroup = new IsolatedThreadGroup("clojure-thread-group");
 	try {
             Thread mainThread = new Thread(threadGroup, task);
-            mainThread.setContextClassLoader(getClassLoader(scope));
+            mainThread.setContextClassLoader(classpath.getClassLoader());
             System.setOut(new PrintStream(new WrappedStream(stdout)));
             mainThread.start();
             joinNonDaemonThreads(threadGroup);

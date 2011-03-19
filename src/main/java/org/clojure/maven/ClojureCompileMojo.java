@@ -27,7 +27,13 @@ public class ClojureCompileMojo extends AbstractClojureMojo {
     private String outputDirectory;
 
     public void execute() throws MojoExecutionException {
-	runIsolated("compile", new ClojureCompiler(outputDirectory, namespaces));
+        try {
+            Classpath classpath = new Classpath(project, Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES, null);
+            getLog().debug("Classpath: " + classpath);
+            runIsolated(classpath, new ClojureCompiler(outputDirectory, namespaces));
+        } catch (Exception e) {
+            throw new MojoExecutionException("Clojure execution failed", e);
+        }
     }
 
     class ClojureCompiler implements Runnable {
