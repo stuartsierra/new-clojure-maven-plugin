@@ -4,8 +4,32 @@
   <groupId>org.clojure</groupId>
   <artifactId>clojure-maven-plugin</artifactId>
   <packaging>maven-plugin</packaging>
-  <version>1.0.0-SNAPSHOT</version>
-  <name>clojure-maven-plugin Maven Mojo</name>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>Clojure Maven Plugin</name>
+
+  <licenses>
+    <license>
+      <name>Eclipse Public License 1.0</name>
+      <url>http://opensource.org/licenses/eclipse-1.0.php</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+ 
+  <developers>
+    <developer>
+      <name>Stuart Sierra</name>
+      <email>mail@stuartsierra.com</email>
+      <url>http://stuartsierra.com/</url>
+      <timezone>-5</timezone>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git@github.com:stuartsierra/new-clojure-maven-plugin.git</connection>
+    <developerConnection>scm:git:git@github.com:stuartsierra/new-clojure-maven-plugin.git</developerConnection>
+    <url>git@github.com:stuartsierra/new-clojure-maven-plugin.git</url>
+  </scm>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.maven</groupId>
@@ -18,6 +42,7 @@
       <version>2.0.9</version>
     </dependency>
   </dependencies>
+
   <build>
     <plugins>
       <plugin>
