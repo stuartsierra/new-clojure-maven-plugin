@@ -1,9 +1,7 @@
 package org.clojure.maven;
 
-import org.apache.maven.plugin.AbstractMojo;
-import org.apache.maven.plugin.MojoExecutionException;
-
 import java.lang.reflect.Method;
+import org.apache.maven.plugin.MojoExecutionException;
 
 /**
  * Compile Clojure source files
@@ -11,7 +9,7 @@ import java.lang.reflect.Method;
  * @requiresDependencyResolution test
  * @goal compile
  */
-public class ClojureCompileMojo extends AbstractClojureCompileMojo {
+public class ClojureCompileMojo extends AbstractClojureMojo {
 
     /**
      * Namespaces to be compiled.

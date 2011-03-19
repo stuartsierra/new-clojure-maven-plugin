@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.Properties;
 
 /**
- * Base class for running the Clojure compiler.
+ * Base class for running Clojure
  *
  */
-public abstract class AbstractClojureCompileMojo extends AbstractMojo {
+public abstract class AbstractClojureMojo extends AbstractMojo {
 
     /**
      * The enclosing project.
