@@ -23,6 +23,7 @@ public abstract class AbstractClojureCompileMojo extends AbstractClojureMojo {
 
         try {
             new File(outputDirectory).mkdirs();
+            System.setProperty("clojure.compile.path", outputDirectory);
             Classpath classpath = new Classpath(project, classpathScope, null);
             URLClassLoader classloader = classpath.getClassLoader();
             getLog().debug("Classpath URLs: " + Arrays.toString(classloader.getURLs()));
