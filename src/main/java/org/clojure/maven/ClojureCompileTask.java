@@ -18,21 +18,22 @@ public class ClojureCompileTask implements Runnable {
     }
         
     public void run() {
+        ClojureReflector clojure = new ClojureReflector();
         boolean bindingsPushed = false;
         try {
             Object bindings =
-                ClojureReflector.
-                map(ClojureReflector.compilePathVar,
+                clojure.
+                map(clojure.compilePathVar,
                     System.getProperty(PATH_PROP),
-                    ClojureReflector.warnOnReflectionVar,
+                    clojure.warnOnReflectionVar,
                     "true".equals(System.getProperty(REFLECTION_WARNING_PROP)),
-                    ClojureReflector.uncheckedMathVar,
+                    clojure.uncheckedMathVar,
                     "true".equals(System.getProperty(UNCHECKED_MATH_PROP)));
-            ClojureReflector.pushThreadBindings(bindings);
+            clojure.pushThreadBindings(bindings);
             bindingsPushed = true;
             for (int i = 0; i < namespaces.length; i++) {
                 log.info("Compiling " + namespaces[i]);
-                ClojureReflector.compile(ClojureReflector.symbol(namespaces[i]));
+                clojure.compile(clojure.symbol(namespaces[i]));
             }
         } catch (Exception e) {
             Thread.currentThread().getThreadGroup().
@@ -40,7 +41,7 @@ public class ClojureCompileTask implements Runnable {
         } finally {
             if (bindingsPushed) {
                 try {
-                    ClojureReflector.popThreadBindings();
+                    clojure.popThreadBindings();
                 } catch (Exception e) {
                     Thread.currentThread().getThreadGroup().
                         uncaughtException(Thread.currentThread(), e);
