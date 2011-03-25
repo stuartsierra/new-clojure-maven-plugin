@@ -23,13 +23,23 @@ public abstract class AbstractClojureCompileMojo extends AbstractClojureMojo {
 
         try {
             new File(outputDirectory).mkdirs();
-            System.setProperty("clojure.compile.path", outputDirectory);
-            Classpath classpath = new Classpath(project, classpathScope, null);
-            URLClassLoader classloader = classpath.getClassLoader();
-            getLog().debug("Classpath URLs: " + Arrays.toString(classloader.getURLs()));
-            runIsolated(classloader, new ClojureCompileTask(outputDirectory, namespaces));
         } catch (Exception e) {
-            throw new MojoExecutionException("Clojure execution failed", e);
+            throw new MojoExecutionException("Failed to create output directory", e);
+        }
+        System.setProperty("clojure.compile.path", outputDirectory);
+        Classpath classpath;
+        try {
+            classpath = new Classpath(project, classpathScope, null);
+        } catch (Exception e) {
+            throw new MojoExecutionException("Classpath initialization failed", e);
+        }
+        IsolatedThreadRunner runner =
+            new IsolatedThreadRunner(getLog(), classpath,
+                                     new ClojureCompileTask(outputDirectory, namespaces));
+        runner.run();
+        Throwable t = runner.getUncaught();
+        if (t != null) {
+            throw new MojoExecutionException("Clojure compilation failed", t);
         }
     }
 }

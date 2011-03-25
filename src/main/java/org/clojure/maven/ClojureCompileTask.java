@@ -1,9 +1,5 @@
 package org.clojure.maven;
 
-import org.clojure.maven.reflect.RT;
-import org.clojure.maven.reflect.Var;
-import org.clojure.maven.reflect.Symbol;
-
 public class ClojureCompileTask implements Runnable {
     private static final String PATH_PROP = "clojure.compile.path";
     private static final String REFLECTION_WARNING_PROP = "clojure.compile.warn-on-reflection";
@@ -18,15 +14,38 @@ public class ClojureCompileTask implements Runnable {
     }
         
     public void run() {
+        boolean bindingsPushed = false;
         try {
-            Var compile = RT.var("clojure.core", "compile");
-            Var compile_path = RT.var("clojure.core", "*compile-path*");
-            Var with_bindings = RT.var("clojure.core", "with-bindings*");
-
-            Object bindings = RT.map(compile_path.var, System.getProperty("clojure.compile.path"));
-            with_bindings.invoke(bindings, compile.var, Symbol.intern(namespaces[0]));
+            Object bindings =
+                ClojureReflector.
+                map(ClojureReflector.compilePathVar,
+                    System.getProperty(PATH_PROP),
+                    ClojureReflector.warnOnReflectionVar,
+                    "true".equals(System.getProperty(REFLECTION_WARNING_PROP)),
+                    ClojureReflector.uncheckedMathVar,
+                    "true".equals(System.getProperty(UNCHECKED_MATH_PROP)));
+            ClojureReflector.pushThreadBindings(bindings);
+            bindingsPushed = true;
+            for (int i = 0; i < namespaces.length; i++) {
+                ClojureReflector.compile(ClojureReflector.symbol(namespaces[i]));
+            }
         } catch (Exception e) {
-            Thread.currentThread().getThreadGroup().uncaughtException(Thread.currentThread(), e);
+            Throwable cause = e;
+            while (cause.getCause() != null) {
+                cause = cause.getCause();
+            }
+            cause.printStackTrace();
+            Thread.currentThread().getThreadGroup().
+                uncaughtException(Thread.currentThread(), e);
+        } finally {
+            if (bindingsPushed) {
+                try {
+                    ClojureReflector.popThreadBindings();
+                } catch (Exception e) {
+                    Thread.currentThread().getThreadGroup().
+                        uncaughtException(Thread.currentThread(), e);
+                }
+            }
         }
     }
 }
