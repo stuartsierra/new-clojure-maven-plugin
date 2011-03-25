@@ -18,9 +18,10 @@ public class ClojureCompileTask implements Runnable {
     }
         
     public void run() {
-        ClojureReflector clojure = new ClojureReflector();
+        ClojureReflector clojure = null;
         boolean bindingsPushed = false;
         try {
+            clojure = new ClojureReflector();
             Object bindings =
                 clojure.
                 map(clojure.compilePathVar,

@@ -13,54 +13,49 @@ public class ClojureReflector {
     private static final String WARN_ON_REFLECTION_PROP = "clojure.compile.warn-on-reflection";
     private static final String UNCHECKED_MATH_PROP = "clojure.compile.unchecked-math";
 
-    private Class RTClass;
-    private Class VarClass;
+    private final Class RTClass;
+    private final Class VarClass;
 
-    private Method mapMethod;
-    private Method varMethod;
+    private final Method mapMethod;
+    private final Method varMethod;
 
-    private Method invoke0;
-    private Method invoke1;
-    private Method invoke2;
-    private Method invoke3;
-    private Method invoke4;
-    private Method invoke5;
+    private final Method invoke0;
+    private final Method invoke1;
+    private final Method invoke2;
+    private final Method invoke3;
+    private final Method invoke4;
+    private final Method invoke5;
 
-    public Object compileVar;
-    public Object compilePathVar;
-    public Object pushThreadBindingsVar;
-    public Object popThreadBindingsVar;
-    public Object symbolVar;
-    public Object uncheckedMathVar;
-    public Object warnOnReflectionVar;
+    public final Object compileVar;
+    public final Object compilePathVar;
+    public final Object pushThreadBindingsVar;
+    public final Object popThreadBindingsVar;
+    public final Object symbolVar;
+    public final Object uncheckedMathVar;
+    public final Object warnOnReflectionVar;
 
-    public ClojureReflector() {
+    public ClojureReflector() throws Exception {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
-        try {
-            RTClass = classloader.loadClass("clojure.lang.RT");
-            VarClass = classloader.loadClass("clojure.lang.Var");
+        RTClass = classloader.loadClass("clojure.lang.RT");
+        VarClass = classloader.loadClass("clojure.lang.Var");
 
-            mapMethod = RTClass.getMethod("map", new Class[]{Object[].class});
-            varMethod = RTClass.getMethod("var", new Class[]{String.class, String.class});
+        mapMethod = RTClass.getMethod("map", new Class[]{Object[].class});
+        varMethod = RTClass.getMethod("var", new Class[]{String.class, String.class});
 
-            invoke0 = VarClass.getMethod("invoke", new Class[]{});
-            invoke1 = VarClass.getMethod("invoke", new Class[]{Object.class});
-            invoke2 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class});
-            invoke3 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class, Object.class});
-            invoke4 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class, Object.class, Object.class});
-            invoke5 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class, Object.class, Object.class, Object.class});
+        invoke0 = VarClass.getMethod("invoke", new Class[]{});
+        invoke1 = VarClass.getMethod("invoke", new Class[]{Object.class});
+        invoke2 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class});
+        invoke3 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class, Object.class});
+        invoke4 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class, Object.class, Object.class});
+        invoke5 = VarClass.getMethod("invoke", new Class[]{Object.class, Object.class, Object.class, Object.class, Object.class});
 
-            compileVar = var("clojure.core", "compile");
-            compilePathVar = var("clojure.core", "*compile-path*");
-            pushThreadBindingsVar = var("clojure.core", "push-thread-bindings");
-            popThreadBindingsVar = var("clojure.core", "pop-thread-bindings");
-            symbolVar = var("clojure.core", "symbol");
-            uncheckedMathVar = var("clojure.core", "*unchecked-math*");
-            warnOnReflectionVar = var("clojure.core", "*warn-on-reflection*");
-        } catch (Exception e) {
-            System.err.println("Failed to load Clojure");
-            e.printStackTrace();
-        }
+        compileVar = var("clojure.core", "compile");
+        compilePathVar = var("clojure.core", "*compile-path*");
+        pushThreadBindingsVar = var("clojure.core", "push-thread-bindings");
+        popThreadBindingsVar = var("clojure.core", "pop-thread-bindings");
+        symbolVar = var("clojure.core", "symbol");
+        uncheckedMathVar = var("clojure.core", "*unchecked-math*");
+        warnOnReflectionVar = var("clojure.core", "*warn-on-reflection*");
     }
 
     /** Returns the Clojure Var with the given namespace and name. */
