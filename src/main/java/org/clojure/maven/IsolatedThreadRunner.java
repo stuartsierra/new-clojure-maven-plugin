@@ -1,6 +1,7 @@
 package org.clojure.maven;
 
 import org.apache.maven.plugin.logging.Log;
+import java.util.concurrent.Callable;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,23 +23,24 @@ public class IsolatedThreadRunner implements Runnable {
     }
 
     public void run() {
-        URLClassLoader classloader = classpath.getClassLoader();
-        log.debug("Classpath URLs: " + Arrays.toString(classloader.getURLs()));
         Properties oldSystemProperties = System.getProperties();
         IsolatedThreadGroup threadGroup = new IsolatedThreadGroup("isolated-thread-group");
-	try {
-            Thread mainThread = new Thread(threadGroup, task, "isolated-main-thread");
-            mainThread.setContextClassLoader(classloader);
-            mainThread.start();
-            joinNonDaemonThreads(threadGroup);
-        } finally {
-            if (oldSystemProperties != null) {
-                System.setProperties(oldSystemProperties);
-            }
-	}
-        if (threadGroup.uncaught != null) {
-            uncaught = threadGroup.uncaught;
+        URLClassLoader classloader;
+        try {
+            classloader = classpath.getClassLoader();
+        } catch (Exception e) {
+            this.uncaught = e;
+            return;
         }
+        log.debug("Classpath URLs: " + Arrays.toString(classloader.getURLs()));
+        Thread mainThread = new Thread(threadGroup, task, "isolated-main-thread");
+        mainThread.setContextClassLoader(classloader);
+        mainThread.start();
+        joinNonDaemonThreads(threadGroup);
+        if (oldSystemProperties != null) {
+            System.setProperties(oldSystemProperties);
+        }
+        this.uncaught = threadGroup.uncaught;
     }
 
     public Throwable getUncaught() {
