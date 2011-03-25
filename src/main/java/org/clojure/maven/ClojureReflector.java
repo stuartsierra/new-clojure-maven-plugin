@@ -60,53 +60,37 @@ public class ClojureReflector {
 
     /** Returns the Clojure Var with the given namespace and name. */
     public Object var(String namespace, String name) throws Exception {
-        if (varMethod == null)
-            throw new IllegalStateException("Clojure failed to load");
         return varMethod.invoke(null, namespace, name);
     }
 
     /** Returns a Clojure IPersistentMap given a series of key-value
      * pairs. */
     public Object map(Object... args) throws Exception {
-        if (mapMethod == null)
-            throw new IllegalStateException("Clojure failed to load");
         return mapMethod.invoke(null, (Object)args);
     }
 
     /** Invokes a Var as a function with no arguments */
     public Object invoke(Object theVar) throws Exception{
-        if (invoke0 == null)
-            throw new IllegalStateException("Clojure failed to load");
         return invoke0.invoke(theVar);
     }
 
     public Object invoke(Object theVar, Object arg1) throws Exception{
-        if (invoke1 == null)
-            throw new IllegalStateException("Clojure failed to load");
         return invoke1.invoke(theVar, arg1);
     }
 
     public Object invoke(Object theVar, Object arg1, Object arg2) throws Exception{
-        if (invoke2 == null)
-            throw new IllegalStateException("Clojure failed to load");
         return invoke2.invoke(theVar, arg1, arg2);
     }
 
     public Object invoke(Object theVar, Object arg1, Object arg2, Object arg3) throws Exception{
-        if (invoke3 == null)
-            throw new IllegalStateException("Clojure failed to load");
         return invoke3.invoke(theVar, arg1, arg2, arg3);
     }
 
     public Object invoke(Object theVar, Object arg1, Object arg2, Object arg3, Object arg4) throws Exception{
-        if (invoke4 == null)
-            throw new IllegalStateException("Clojure failed to load");
         return invoke4.invoke(theVar, arg1, arg2, arg3, arg4);
     }
 
     public Object invoke(Object theVar, Object arg1, Object arg2, Object arg3, Object arg4, Object arg5) throws Exception{
-        if (invoke5 == null)
-            throw new IllegalStateException("Clojure failed to load");
         return invoke5.invoke(theVar, arg1, arg2, arg3, arg4, arg5);
     }
 
