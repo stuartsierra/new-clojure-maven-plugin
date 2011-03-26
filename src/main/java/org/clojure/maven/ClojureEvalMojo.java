@@ -41,7 +41,7 @@ public class ClojureEvalMojo extends AbstractClojureMojo {
         runner.run();
         Throwable t = runner.getUncaught();
         if (t != null) {
-            throw new MojoExecutionException("Clojure compilation failed", t);
+            throw new MojoExecutionException("Clojure evaluation failed", t);
         }
     }
 
