@@ -7,12 +7,10 @@ public class ClojureCompileTask implements Runnable {
     private static final String REFLECTION_WARNING_PROP = "clojure.compile.warn-on-reflection";
     private static final String UNCHECKED_MATH_PROP = "clojure.compile.unchecked-math";
 
-    private final String outputDirectory;
     private final String[] namespaces;
     private final Log log;
         
-    public ClojureCompileTask(Log log, String outputDirectory, String[] namespaces) {
-        this.outputDirectory = outputDirectory;
+    public ClojureCompileTask(Log log, String[] namespaces) {
         this.namespaces = namespaces;
         this.log = log;
     }

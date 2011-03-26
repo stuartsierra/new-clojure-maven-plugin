@@ -35,8 +35,7 @@ public abstract class AbstractClojureCompileMojo extends AbstractClojureMojo {
         }
         IsolatedThreadRunner runner =
             new IsolatedThreadRunner(getLog(), classpath,
-                                     new ClojureCompileTask(getLog(), outputDirectory,
-                                                            namespaces));
+                                     new ClojureCompileTask(getLog(), namespaces));
         runner.run();
         Throwable t = runner.getUncaught();
         if (t != null) {
