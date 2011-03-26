@@ -28,6 +28,7 @@ public class ClojureReflector {
 
     public final Object compileVar;
     public final Object compilePathVar;
+    public final Object loadStringVar;
     public final Object pushThreadBindingsVar;
     public final Object popThreadBindingsVar;
     public final Object symbolVar;
@@ -51,6 +52,7 @@ public class ClojureReflector {
 
         compileVar = var("clojure.core", "compile");
         compilePathVar = var("clojure.core", "*compile-path*");
+        loadStringVar = var("clojure.core", "load-string");
         pushThreadBindingsVar = var("clojure.core", "push-thread-bindings");
         popThreadBindingsVar = var("clojure.core", "pop-thread-bindings");
         symbolVar = var("clojure.core", "symbol");
@@ -108,5 +110,9 @@ public class ClojureReflector {
 
     public Object compile(Object symbol) throws Exception {
         return invoke(compileVar, symbol);
+    }
+
+    public Object loadString(String code) throws Exception {
+        return invoke(loadStringVar, code);
     }
 }
