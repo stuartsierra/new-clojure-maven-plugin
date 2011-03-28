@@ -1,17 +1,19 @@
 package org.clojure.maven;
 
-public class ClojureEvalTask implements Runnable {
-    private final String eval;
+import java.io.Reader;
+
+public class ClojureLoadReaderTask implements Runnable {
+    private final Reader reader;
         
-    public ClojureEvalTask(String eval) {
-        this.eval = eval;
+    public ClojureLoadReaderTask(Reader reader) {
+        this.reader = reader;
     }
         
     public void run() {
         ClojureReflector clojure = null;
         try {
             clojure = new ClojureReflector();
-            clojure.loadString(eval);
+            clojure.loadReader(reader);
         } catch (Exception e) {
             Thread.currentThread().getThreadGroup().
                 uncaughtException(Thread.currentThread(), e);

@@ -12,16 +12,7 @@ import org.apache.maven.project.MavenProject;
  *
  * @goal eval
  */
-public class AbstractClojureMojo extends AbstractMojo {
-
-    /**
-     * The enclosing project.
-     * 
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
-    protected MavenProject project;
+public class ClojureEvalMojo extends AbstractClojureMojo {
 
     /**
      * Clojure code to be evaluated
@@ -31,49 +22,8 @@ public class AbstractClojureMojo extends AbstractMojo {
      */
     private String eval;
 
-    /**
-     * Classpath scope: one of 'compile', 'test', or
-     * 'runtime'. Defaults to 'test'.
-     *
-     * @parameter expression="${clojure.scope}" default-value="test"
-     * @required
-     */
-    private String scope;
-
-    /**
-     * If true (default), include project source directories on the classpath.
-     *
-     * @parameter expression="${clojure.includeSources}" default=value="true"
-     * @required
-     */
-    private boolean includeSources;
-
-    /**
-     * If true, include project resource directories on the classpath.
-     * Defaults to false, as resources will normally be copied into
-     * the compile path during the copy-resources phase.
-     *
-     * @parameter expression="${clojure.includeResources}" default-value="false"
-     * @required
-     */
-    private boolean includeResources;
-    
     public void execute() throws MojoExecutionException {
-        Classpath classpath;
-        try {
-            classpath = Classpath.forScope(project, scope, includeSources, includeResources,
-                                           null);
-        } catch (Exception e) {
-            throw new MojoExecutionException("Classpath initialization failed", e);
-        }
-        IsolatedThreadRunner runner =
-            new IsolatedThreadRunner(getLog(), classpath,
-                                     new ClojureEvalTask(getLog(), eval));
-        runner.run();
-        Throwable t = runner.getUncaught();
-        if (t != null) {
-            throw new MojoExecutionException("Clojure evaluation failed", t);
-        }
+        run(new ClojureEvalTask(eval));
     }
 }
 

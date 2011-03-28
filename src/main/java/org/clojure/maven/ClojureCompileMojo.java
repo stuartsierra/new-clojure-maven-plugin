@@ -1,5 +1,7 @@
 package org.clojure.maven;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
@@ -8,7 +10,7 @@ import org.apache.maven.plugin.MojoExecutionException;
  * @requiresDependencyResolution compile
  * @goal compile
  */
-public class ClojureCompileMojo extends AbstractClojureCompileMojo {
+public class ClojureCompileMojo extends AbstractClojureMojo {
 
     /**
      * outputDirectory
@@ -18,8 +20,28 @@ public class ClojureCompileMojo extends AbstractClojureCompileMojo {
      */
     private String outputDirectory;
 
+    /**
+     * @parameter
+     * @required
+     */
+    private String[] namespaces;
+
     public void execute() throws MojoExecutionException {
-        compile(outputDirectory, Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES);
+        System.setProperty("clojure.compile-path", outputDirectory);
+        System.setProperty("org.clojure.maven.namespaces", join(namespaces));
+        InputStream stream = this.getClass().getClassLoader().getResourceAsStream("org/clojure/maven/compile.clj");
+        run(new ClojureLoadReaderTask(new InputStreamReader(stream)));
+    }
+
+    private static String join(String[] args) {
+        StringBuilder s = new StringBuilder();
+        s.append(args[0]);
+        for (int i = 1; i < args.length; i++) {
+            s.append(",");
+            s.append(args[i]);
+        }
+        return s.toString();
     }
 }
+
 

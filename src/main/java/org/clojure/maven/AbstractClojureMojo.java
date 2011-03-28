@@ -10,9 +10,8 @@ import org.apache.maven.project.MavenProject;
 /**
  * Base class for running Clojure
  *
- * @goal eval
  */
-public class AbstractClojureMojo extends AbstractMojo {
+public abstract class AbstractClojureMojo extends AbstractMojo {
 
     /**
      * The enclosing project.
@@ -24,29 +23,21 @@ public class AbstractClojureMojo extends AbstractMojo {
     protected MavenProject project;
 
     /**
-     * Clojure code to be evaluated
-     *
-     * @parameter expression="${clojure.eval}"
-     * @required
-     */
-    private String eval;
-
-    /**
      * Classpath scope: one of 'compile', 'test', or
      * 'runtime'. Defaults to 'test'.
      *
      * @parameter expression="${clojure.scope}" default-value="test"
      * @required
      */
-    private String scope;
+    protected String scope;
 
     /**
      * If true (default), include project source directories on the classpath.
      *
-     * @parameter expression="${clojure.includeSources}" default=value="true"
+     * @parameter expression="${clojure.includeSources}" default-value="true"
      * @required
      */
-    private boolean includeSources;
+    protected boolean includeSources;
 
     /**
      * If true, include project resource directories on the classpath.
@@ -56,9 +47,9 @@ public class AbstractClojureMojo extends AbstractMojo {
      * @parameter expression="${clojure.includeResources}" default-value="false"
      * @required
      */
-    private boolean includeResources;
+    protected boolean includeResources;
     
-    public void execute() throws MojoExecutionException {
+    public void run(Runnable task) throws MojoExecutionException {
         Classpath classpath;
         try {
             classpath = Classpath.forScope(project, scope, includeSources, includeResources,
@@ -67,8 +58,7 @@ public class AbstractClojureMojo extends AbstractMojo {
             throw new MojoExecutionException("Classpath initialization failed", e);
         }
         IsolatedThreadRunner runner =
-            new IsolatedThreadRunner(getLog(), classpath,
-                                     new ClojureEvalTask(getLog(), eval));
+            new IsolatedThreadRunner(getLog(), classpath, task);
         runner.run();
         Throwable t = runner.getUncaught();
         if (t != null) {
