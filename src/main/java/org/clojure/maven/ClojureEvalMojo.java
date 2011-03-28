@@ -14,6 +14,7 @@ public class ClojureEvalMojo extends AbstractClojureMojo {
 
     /**
      * Clojure code to be evaluated
+     *
      * @parameter expression="${clojure.eval}"
      * @required
      */
@@ -22,16 +23,35 @@ public class ClojureEvalMojo extends AbstractClojureMojo {
     /**
      * Classpath scope: one of 'compile', 'test', or
      * 'runtime'. Defaults to 'test'.
+     *
      * @parameter expression="${clojure.scope}" default-value="test"
      * @required
      */
     private String scope;
 
+    /**
+     * If true (default), include project source directories on the classpath.
+     *
+     * @parameter expression="${clojure.includeSources}" default=value="true"
+     * @required
+     */
+    private boolean includeSources;
+
+    /**
+     * If true, include project resource directories on the classpath.
+     * Defaults to false, as resources will normally be copied into
+     * the compile path during the copy-resources phase.
+     *
+     * @parameter expression="${clojure.includeResources}" default-value="false"
+     * @required
+     */
+    private boolean includeResources;
+    
     public void execute() throws MojoExecutionException {
         Classpath classpath;
-        int classpathScope = getClasspathScope();
         try {
-            classpath = new Classpath(project, classpathScope, null);
+            classpath = Classpath.forScope(project, scope, includeSources, includeResources,
+                                           null);
         } catch (Exception e) {
             throw new MojoExecutionException("Classpath initialization failed", e);
         }
@@ -42,21 +62,6 @@ public class ClojureEvalMojo extends AbstractClojureMojo {
         Throwable t = runner.getUncaught();
         if (t != null) {
             throw new MojoExecutionException("Clojure evaluation failed", t);
-        }
-    }
-
-    private int getClasspathScope() throws MojoExecutionException {
-        if ("compile".equals(scope)) {
-            return Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES;
-        } else if ("test".equals(scope)) {
-            return Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES |
-                Classpath.TEST_CLASSPATH | Classpath.TEST_SOURCES |
-                Classpath.RUNTIME_CLASSPATH;
-        } else if ("runtime".equals(scope)) {
-            return Classpath.COMPILE_CLASSPATH | Classpath.COMPILE_SOURCES |
-                Classpath.RUNTIME_CLASSPATH;
-        } else {
-            throw new MojoExecutionException("Invalid classpath scope: " + scope);
         }
     }
 }
