@@ -27,20 +27,13 @@ public class ClojureCompileMojo extends AbstractClojureMojo {
     private String[] namespaces;
 
     public void execute() throws MojoExecutionException {
+        if (scope == null) scope = "compile";
         System.setProperty("clojure.compile-path", outputDirectory);
-        System.setProperty("org.clojure.maven.namespaces", join(namespaces));
-        InputStream stream = this.getClass().getClassLoader().getResourceAsStream("org/clojure/maven/compile.clj");
+        System.setProperty("org.clojure.maven.namespaces", Util.join(namespaces));
+        System.out.println("Classpath scope: " + scope);
+        InputStream stream = this.getClass().getClassLoader().
+            getResourceAsStream("org/clojure/maven/compile.clj");
         run(new ClojureLoadReaderTask(new InputStreamReader(stream)));
-    }
-
-    private static String join(String[] args) {
-        StringBuilder s = new StringBuilder();
-        s.append(args[0]);
-        for (int i = 1; i < args.length; i++) {
-            s.append(",");
-            s.append(args[i]);
-        }
-        return s.toString();
     }
 }
 

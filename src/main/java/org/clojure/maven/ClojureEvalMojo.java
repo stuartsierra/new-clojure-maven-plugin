@@ -23,6 +23,7 @@ public class ClojureEvalMojo extends AbstractClojureMojo {
     private String eval;
 
     public void execute() throws MojoExecutionException {
+        if (scope == null) scope = "test";
         run(new ClojureEvalTask(eval));
     }
 }

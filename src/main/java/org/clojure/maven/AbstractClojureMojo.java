@@ -26,8 +26,7 @@ public abstract class AbstractClojureMojo extends AbstractMojo {
      * Classpath scope: one of 'compile', 'test', or
      * 'runtime'. Defaults to 'test'.
      *
-     * @parameter expression="${clojure.scope}" default-value="test"
-     * @required
+     * @parameter expression="${clojure.scope}"
      */
     protected String scope;
 
@@ -48,7 +47,7 @@ public abstract class AbstractClojureMojo extends AbstractMojo {
      * @required
      */
     protected boolean includeResources;
-    
+
     public void run(Runnable task) throws MojoExecutionException {
         Classpath classpath;
         try {
