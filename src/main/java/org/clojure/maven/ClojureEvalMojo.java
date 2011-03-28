@@ -4,13 +4,24 @@ import java.io.File;
 import java.net.URLClassLoader;
 import java.util.Arrays;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.project.MavenProject;
 
 /**
- * Evaluate Clojure source code
+ * Base class for running Clojure
  *
  * @goal eval
  */
-public class ClojureEvalMojo extends AbstractClojureMojo {
+public class AbstractClojureMojo extends AbstractMojo {
+
+    /**
+     * The enclosing project.
+     * 
+     * @parameter expression="${project}"
+     * @required
+     * @readonly
+     */
+    protected MavenProject project;
 
     /**
      * Clojure code to be evaluated
